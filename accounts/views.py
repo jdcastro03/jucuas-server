@@ -222,6 +222,8 @@ este enlace</a> para cambiar su contraseña directamente</p>',
         to=[data['email']]
     )
 
+
+    email.encoding = 'utf-8'
     email.attach_alternative(email.body, "text/html")
     email.send()
     return Response({"status": "OK", "message": "El correo de recuperacion ha sido enviado correctamente, redireccionando"})

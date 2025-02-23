@@ -5,7 +5,11 @@ from rest_framework import status, viewsets, generics
 from rest_framework.decorators import api_view
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
+from django.conf import settings
+from django.core.mail import EmailMultiAlternatives
 from django.core.mail import EmailMessage
+from django.core.mail import send_mail
+from django.utils.encoding import smart_str
 from rest_framework.permissions import IsAuthenticated
 from common.decorators.auth_decorator import group_required
 from rest_framework.decorators import api_view, permission_classes
@@ -243,6 +247,7 @@ def verify_create(type, data):
         else:
             return False
 
+
 @api_view(['POST'])
 @permission_classes([IsAdminUser])
 @transaction.atomic
@@ -252,64 +257,64 @@ def change_presenter_password_with_notification(request, presenter_id):
     y envía un correo si la opción está activada.
     """
     try:
-        with transaction.atomic():
-            data = request.data
-            new_password = data.get('new_password')
-            confirm_password = data.get('confirm_password')
-            notify_user = data.get('notify', False)
+        data = request.data
+        new_password = data.get('new_password')
+        confirm_password = data.get('confirm_password')
+        notify_user = data.get('notify', False)
 
-            if not new_password or not confirm_password:
-                return JsonResponse({'status': 'Error', 'message': 'Faltan parámetros necesarios.'}, status=400)
+        if not new_password or not confirm_password:
+            return JsonResponse({'status': 'Error', 'message': 'Faltan parámetros necesarios.'}, status=400)
 
-            if new_password != confirm_password:
-                return JsonResponse({'status': 'Error', 'message': 'Las contraseñas no coinciden'}, status=400)
+        if new_password != confirm_password:
+            return JsonResponse({'status': 'Error', 'message': 'Las contraseñas no coinciden'}, status=400)
 
-            # Buscar el presentador en la tabla presenter_presenter
-            presenter = get_object_or_404(Presenter, pk=presenter_id)
+        # Buscar el presentador en la tabla presenter_presenter
+        presenter = get_object_or_404(Presenter, pk=presenter_id)
 
-            # Obtener el user_id desde el presentador
-            user_id = presenter.user_id
+        # Obtener el user_id desde el presentador
+        user_id = presenter.user_id
 
-            # Buscar el usuario correspondiente en la tabla accounts_user
-            user = get_object_or_404(User, pk=user_id)
+        # Buscar el usuario correspondiente en la tabla accounts_user
+        user = get_object_or_404(User, pk=user_id)
 
-            # Guardar la contraseña anterior para verificación
-            old_password_hash = user.password
+        # Guardar la contraseña anterior para verificación
+        old_password_hash = user.password
 
-            # Cambiar la contraseña (hasheándola manualmente)
-            user.password = make_password(new_password)
-            user.save(update_fields=['password'])
+        # Cambiar la contraseña (hasheándola manualmente)
+        user.password = make_password(new_password)
+        user.save(update_fields=['password'])
 
-            # Verificar que la contraseña realmente cambió
-            if user.password == old_password_hash:
-                raise Exception("La contraseña no se actualizó en la base de datos")
+        # Verificar que la contraseña realmente cambió
+        if user.password == old_password_hash:
+            raise Exception("La contraseña no se actualizó en la base de datos")
 
-            # Enviar correo si es necesario
-            if notify_user:
-                try:
-                    subject = 'Tu contraseña ha sido actualizada'
-                    message = 'Hola, tu nueva contraseña ha sido cambiada con éxito.'
+        # Enviar correo si es necesario
+        if notify_user:
+            email = EmailMultiAlternatives(
+                subject='JucUAS - Cambio de Contraseña',
+                from_email="",  # Asegúrate de poner tu correo aquí
+                body=f'<h1>Hola, {presenter.first_name}</h1>\n'
+                     f'<p>Tu contraseña ha sido cambiada correctamente. '
+                     f'Tu nueva contraseña es: <strong>{new_password}</strong></p>',
+                to=[user.email]
+            )
 
-                    from_email = 'jdnajeracastro38@gmail.com'
-                    recipient_list = [user.email]
+            # Asegurarse de que la codificación sea UTF-8
+            email.encoding = 'utf-8'
 
-                    # Asegúrate de establecer la codificación como utf-8
-                    email = EmailMessage(subject, message, from_email, recipient_list)
-                    email.content_subtype = "html"  # Establece el tipo de contenido a HTML
-                    email.encoding = 'utf-8'  # Configura la codificación a utf-8 para manejar caracteres especiales
-                    email.send()
-                    print(f"Correo enviado a {user.email}")
-                except Exception as e:
-                    print(f"Error al enviar el correo: {str(e)}")
-                    return JsonResponse({'status': 'Error', 'message': f'Contraseña cambiada, pero no se pudo enviar el correo: {str(e)}'}, status=200)
+            # Añadir la alternativa en HTML
+            email.attach_alternative(email.body, "text/html")
 
-            return JsonResponse({
-                'status': 'OK',
-                'message': 'Contraseña modificada correctamente',
-                'user_id': user.id,
-                'password_changed': old_password_hash != user.password,
-                'email_sent': notify_user
-            }, status=200)
+            # Enviar el correo
+            email.send()
+
+        return JsonResponse({
+            'status': 'OK',
+            'message': 'Contraseña modificada correctamente',
+            'user_id': user.id,
+            'password_changed': True,
+            'email_sent': notify_user
+        }, status=200)
 
     except Exception as e:
         print(f"Error al cambiar contraseña: {str(e)}")
