@@ -29,8 +29,9 @@ EDUCATIONAL_LEVEL_TO_IS_DIRECTED_CHOICES = (
 )
 
 TYPE_OF_PUBLIC_CHOICES = (
-    ('INT', 'Interno'), #Interno: estudiantes y personal de la institución
-    ('EXT', 'Externo'), #Externo: estudiantes de otras instituciones o público en general
+    ('INT', 'Interno'),  # Interno: estudiantes y personal de la institución
+    ('EXT', 'Externo'),  # Externo: estudiantes de otras instituciones o público en general
+    ('EXT&INT', 'Externo e Interno'),  # Nueva opción: ambos públicos
 )
 
 EVIDENCE_STATUS = (
@@ -113,7 +114,7 @@ class Activity(TimeStampedModel):
     edition = models.ForeignKey(Deadline, blank=True, null=False, on_delete=models.CASCADE, default=1)
     date_activity = models.DateTimeField(blank=True)
     educational_level_to_is_directed = models.CharField(blank=True, null=True, max_length=6, choices=EDUCATIONAL_LEVEL_TO_IS_DIRECTED_CHOICES)
-    type_of_public = models.CharField(blank=True, null=True, max_length=6, choices=TYPE_OF_PUBLIC_CHOICES)
+    type_of_public = models.CharField(blank=True, null=True, max_length=10, choices=TYPE_OF_PUBLIC_CHOICES)
     area_knowledge = models.CharField(blank=False, null=True, max_length=6, choices=AREA_KNOWLEDGE_CHOICES)
     #activity_manager = models.ForeignKey(ActivityManager, blank=True, null=True, on_delete=models.CASCADE)
     presenter = models.ForeignKey(Presenter, related_name='activity_presenter', blank=True, null=False, on_delete=models.CASCADE)

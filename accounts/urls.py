@@ -12,11 +12,11 @@ urlpatterns = [
     path('users/current/', views.UserProfile.as_view(), name='users'),
 
     # PASSWORD CHANGE
-
     path('password/change/', views.update_user_password),
     path('password/change/token/', views.change_password_with_token),
-    # path('password/recovery/', views.recovery_password),
     path('password/recovery/', views.recovery_password),
+    path('password/change/admin/notify/<int:user_id>/', views.change_user_password_with_notification, name='change_password_with_notification'),  # Nueva ruta
+
     # DEBUGGIN'
     path('resetpwd/', django_views.PasswordResetView.as_view(), name='reset_password'),
     path('reset_password_sent/', django_views.PasswordResetDoneView.as_view(), name='password_reset_sent'),
@@ -34,5 +34,4 @@ urlpatterns = [
     path('my_gender/', views.get_gender, name='my_gender'),
 
     path('register_mail/', views.register_mail, name='my_gender'),
-
 ]

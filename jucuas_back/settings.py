@@ -124,15 +124,19 @@ DATABASES = {
 #-- User model custom
 AUTH_USER_MODEL = 'accounts.User'
 
-#-- Sendmail Configuration
+# 📌 Configuración de envío de correos en Django
 EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.smtp.EmailBackend')
-EMAIL_HOST = config('EMAIL_HOST',default='')
-EMAIL_HOST_USER = config('EMAIL_USER',default='')
-EMAIL_HOST_PASSWORD = config('EMAIL_PASSWORD',default='')
-EMAIL_PORT = config('EMAIL_PORT',default=587,cast=int)
-EMAIL_USE_TLS = config('EMAIL_TLS',default=True,cast=bool)
-DEFAULT_FROM_EMAIL = config('EMAIL_DEFAULT')
-EMAIL_SUBJECT_PREFIX = '[DJRF Admin]'
+EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
+EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
+EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default=EMAIL_HOST_USER)
+# Codificación de correo para caracteres especiales
+EMAIL_ENCODING = 'utf-8'  # Añadir esta línea
+# Asegúrate de que los caracteres especiales se manejen correctamente
+DEFAULT_CHARSET = 'utf-8'
+
 
 LOGIN_URL='/admin/login/'
 
@@ -167,7 +171,7 @@ TIME_ZONE = 'America/Chihuahua'
 
 USE_I18N = True
 
-USE_TZ = True
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)
