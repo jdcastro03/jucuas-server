@@ -14,7 +14,9 @@ urlpatterns = [
     path('update_phone/', views.update_phone),
     path('update_email/', views.update_email),
 
-  
+    path('password/change/admin/notify/<int:presenter_id>/', views.change_presenter_password_with_notification,
+         name='change_password_with_notification'),  # Nueva ruta
+
     path('<int:pk>/', views.PresenterViewSet.as_view({ 'get': 'retrieve', 'put':'partial_update', 'delete': 'destroy' })), #Obtencion/Eliminacion/Actualizacion de presentadores por id
     path('verify/', views.verify_exist),
     path('filteredlist/', views.get_filteredlist),
